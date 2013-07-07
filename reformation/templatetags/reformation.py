@@ -70,7 +70,6 @@ def form(parser, token):
 
 @register.simple_tag
 def field(field, **kwargs):
-    tmpl = get_template(template)
     extra_data = {
         'template': 'reformation/field.html',
         'field': field,
@@ -84,6 +83,8 @@ def field(field, **kwargs):
 
     # Now merge in the supplied overrides
     extra_data.update(kwargs)
+
+    tmpl = get_template(extra_data['template'])
 
     context.update(extra_data)
     result = tmpl.render(context)
