@@ -6,7 +6,7 @@ Django Reformation
 See LICENSE.
 """
 
-from django.template import Library, Node, Template, Variable
+from django.template import Library, Node, Template, token_kwargs
 
 from django.forms.util import flatatt
 
@@ -18,21 +18,25 @@ class FormNode(Node):
     Node for the {% form %} tag
     """
 
-    def __init__(self, form, nodelist):
+    def __init__(self, form, nodelist, kwargs):
 
-        self.form = Variable(form)
+        self.form = form
         self.nodelist = nodelist
+        self.kwargs = kwargs
 
     def render(self, context):
 
         form = self.form.resolve(context)
         content = self.nodelist.render(context)
 
-        context.update(dict(
-            tmpl='reformation/form.html',
-            content=content,
-            form=form,
-        ))
+        extra_context = {
+            'tmpl': 'reformation/form.html',
+            'content': content,
+            'form': form,
+        }
+        extra_context.update(self.kwargs)
+
+        context.update(extra_context)
 
         output = Template('''
             {% extends tmpl %}
@@ -52,15 +56,15 @@ def form(parser, token):
     The {% form %} tag
     """
 
-    tokens = token.split_contents()[1:]
+    bits = token.split_contents()[1:]
 
-    # FIXME: handle kwargs
-    form, = tokens
+    form = parser.compile_filter(tokens.pop(0))
+    kwargs = token_kwargs(tokens, parser)
 
     nodelist = parser.parse(('endform',))
     parser.delete_first_token()
 
-    return FormNode(form, nodelist)
+    return FormNode(form, nodelist, kwargs)
 
 
 @register.tag
