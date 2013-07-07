@@ -7,8 +7,9 @@ See LICENSE.
 """
 
 from django.template import Library, Node, Template, token_kwargs
-
 from django.forms.util import flatatt
+
+from containers import defaultdict
 
 register = Library()
 
@@ -67,11 +68,29 @@ def form(parser, token):
     return FormNode(form, nodelist, kwargs)
 
 
-@register.tag
-def field(parser, token):
-    """
-    The {% field %} tag
-    """
+@register.simple_tag
+def field(field, **kwargs):
+    tmpl = get_template(template)
+    extra_data = {
+        'template': 'reformation/field.html',
+        'field': field,
+        'id': field.auto_id,
+    }
+
+    # Explode values from the BoundField
+    for attr in ('value', 'errors', 'label', 'help_text', 'form', 'field',
+        'id_for_label', 'name', 'html_name'):
+        extra_data[attr] = getattr(field, attr)
+
+    # Now merge in the supplied overrides
+    extra_data.update(kwargs)
+
+    context.update(extra_data)
+    result = tmpl.render(context)
+    context.pop()
+
+    return result
+
 
 @register.tag
 def attrs(attr_dict):
