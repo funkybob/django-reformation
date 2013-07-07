@@ -10,5 +10,5 @@ class TestRenderForm(TestCase, RenderTemplateMixin):
     module_name = 'reformation'
 
     def test_form_tag(self):
-        rendered = self.render_template('{% form form %}',
+        rendered = self.render_template('{% form form %}{% endform %}',
                                         form=None)

@@ -2,16 +2,22 @@ import os, sys
 from django.conf import settings
 
 DIRNAME = os.path.dirname(__file__)
-settings.configure(DEBUG = True,
-                   DATABASES = {
-                       'default': {
-                           'ENGINE': 'django.db.backends.sqlite3',
-                           'NAME': os.path.join(DIRNAME, 'reformation-test.db'),
-                       }
-                   },
-                   INSTALLED_APPS = ('django.contrib.contenttypes',
-                                     'django.contrib.sessions',
-                                     'reformation',))
+settings.configure(
+    DEBUG = True,
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(DIRNAME, 'reformation-test.db'),
+        }
+    },
+    INSTALLED_APPS = ('django.contrib.contenttypes',
+                      'django.contrib.sessions',
+                      'reformation',
+    ),
+    TEMPLATE_DIRS = (
+        os.path.join(DIRNAME, 'reformation', 'tests', 'templates'),
+    ),
+)
 
 from django.test.utils import setup_test_environment, get_runner, teardown_test_environment
 

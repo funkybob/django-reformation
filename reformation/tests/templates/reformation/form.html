@@ -1,0 +1,8 @@
+{# template for forms rendered with reformation #}
+{% spaceless %}
+  {% csrf_token %}
+
+  {% block form %}
+    {# reformation renders its content here #}
+  {% endblock %}
+{% endspaceless %}
