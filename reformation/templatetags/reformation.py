@@ -6,7 +6,7 @@ Django Reformation
 See LICENSE.
 """
 
-from django.template import Library, Node, Template, token_kwargs
+from django.template import Library, Node, Template, Variable, token_kwargs
 from django.forms.util import flatatt
 
 from containers import defaultdict
@@ -21,7 +21,7 @@ class FormNode(Node):
 
     def __init__(self, form, nodelist, kwargs):
 
-        self.form = form
+        self.form = Variable(form)
         self.nodelist = nodelist
         self.kwargs = kwargs
 
@@ -59,7 +59,7 @@ def form(parser, token):
 
     bits = token.split_contents()[1:]
 
-    form = parser.compile_filter(tokens.pop(0))
+    form = tokens.pop(0)
     kwargs = token_kwargs(tokens, parser)
 
     nodelist = parser.parse(('endform',))
