@@ -6,22 +6,20 @@ Django Reformation
 See LICENSE.
 """
 
-from django.template import Library, Node, Template, Variable, token_kwargs
+from django import template
 from django.forms.util import flatatt
 
-from containers import defaultdict
-
-register = Library()
+register = template.Library()
 
 
-class FormNode(Node):
+class FormNode(template.Node):
     """
     Node for the {% form %} tag
     """
 
     def __init__(self, form, nodelist, kwargs):
 
-        self.form = Variable(form)
+        self.form = template.Variable(form)
         self.nodelist = nodelist
         self.kwargs = kwargs
 
@@ -51,7 +49,10 @@ class FormNode(Node):
 
         if context['_fields']:
             # Here we need to whinge about fields not being rendered
-            pass
+            raise template.TemplateSyntaxError('Not all fields rendered in form: %s (%s)',
+                form.__class__.__name__,
+                context['_fields'],
+            )
 
         context.pop()
 
@@ -67,7 +68,7 @@ def form(parser, token):
     bits = token.split_contents()[1:]
 
     form = tokens.pop(0)
-    kwargs = token_kwargs(tokens, parser)
+    kwargs = template.token_kwargs(tokens, parser)
 
     nodelist = parser.parse(('endform',))
     parser.delete_first_token()
