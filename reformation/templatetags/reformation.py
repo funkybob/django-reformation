@@ -28,12 +28,15 @@ class FormNode(Node):
     def render(self, context):
 
         form = self.form.resolve(context)
+
         content = self.nodelist.render(context)
 
         extra_context = {
             'tmpl': 'reformation/form.html',
             'content': content,
             'form': form,
+            # Add a list of field names so we can track their use
+            '_fields': form.fields.keys(),
         }
         extra_context.update(self.kwargs)
 
@@ -45,6 +48,10 @@ class FormNode(Node):
             {{ content }}
             {% endblock form %}
         ''').render(context)
+
+        if context['_fields']:
+            # Here we need to whinge about fields not being rendered
+            pass
 
         context.pop()
 
@@ -68,13 +75,21 @@ def form(parser, token):
     return FormNode(form, nodelist, kwargs)
 
 
-@register.simple_tag
-def field(field, **kwargs):
+@register.simple_tag(takes_context=True)
+def field(context, field, **kwargs):
     extra_data = {
         'template': 'reformation/field.html',
         'field': field,
         'id': field.auto_id,
     }
+
+    # Remove this field from the list
+    try:
+        context['_fields'].remove(field.name)
+    except ValueError:
+        # Was it there?
+        # Is it from a parent?
+        pass
 
     # Explode values from the BoundField
     for attr in ('value', 'errors', 'label', 'help_text', 'form', 'field',
